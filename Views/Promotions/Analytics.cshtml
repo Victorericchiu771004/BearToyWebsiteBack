@@ -1,0 +1,379 @@
+@model BearToyWebsiteBack.Models.ViewModels.PromotionAnalyticsViewModel
+@{
+    ViewData["Title"] = "活動分析";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>活動分析 - @Model.PromotionName</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.PromotionId" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 檢視詳情
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<!-- 概覽統計卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">總使用次數</h6>
+                        <h3>@Model.TotalUsage</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-users fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">總折扣金額</h6>
+                        <h3>$@Model.TotalDiscountAmount.ToString("N0")</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-dollar-sign fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">總訂單金額</h6>
+                        <h3>$@Model.TotalOrderAmount.ToString("N0")</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-shopping-cart fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">參與用戶數</h6>
+                        <h3>@Model.UniqueUsers</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-user-friends fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 關鍵指標 -->
+<div class="row mb-4">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">關鍵指標</h5>
+            </div>
+            <div class="card-body">
+                <dl class="row">
+                    <dt class="col-sm-6">平均訂單金額</dt>
+                    <dd class="col-sm-6">$@(Model.TotalUsage > 0 ? ((decimal)(Model.TotalOrderAmount / Model.TotalUsage)).ToString("N2") : "0")</dd>
+                    
+                    <dt class="col-sm-6">平均折扣金額</dt>
+                    <dd class="col-sm-6">$@(Model.TotalUsage > 0 ? ((decimal)(Model.TotalDiscountAmount / Model.TotalUsage)).ToString("N2") : "0")</dd>
+                    
+                    <dt class="col-sm-6">折扣率</dt>
+                    <dd class="col-sm-6">@(Model.TotalOrderAmount > 0 ? ((decimal)(Model.TotalDiscountAmount / Model.TotalOrderAmount * 100)).ToString("F2") : "0")%</dd>
+                    
+                    <dt class="col-sm-6">人均使用次數</dt>
+                    <dd class="col-sm-6">@(Model.UniqueUsers > 0 ? (Model.TotalUsage / (double)Model.UniqueUsers).ToString("F2") : "0") 次</dd>
+                </dl>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">效果評估</h5>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <h6>促銷效果</h6>
+                    @{
+                        var effectivenessClass = "";
+                        var effectivenessText = "";
+                        if (Model.TotalUsage > 100)
+                        {
+                            effectivenessClass = "text-success";
+                            effectivenessText = "效果極佳";
+                        }
+                        else if (Model.TotalUsage > 50)
+                        {
+                            effectivenessClass = "text-info";
+                            effectivenessText = "效果良好";
+                        }
+                        else if (Model.TotalUsage > 10)
+                        {
+                            effectivenessClass = "text-warning";
+                            effectivenessText = "效果一般";
+                        }
+                        else
+                        {
+                            effectivenessClass = "text-danger";
+                            effectivenessText = "效果不佳";
+                        }
+                    }
+                    <span class="@effectivenessClass fw-bold">@effectivenessText</span>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>用戶參與度</h6>
+                    @{
+                        var participationClass = "";
+                        var participationText = "";
+                        var avgUsagePerUser = Model.UniqueUsers > 0 ? Model.TotalUsage / (double)Model.UniqueUsers : 0;
+                        if (avgUsagePerUser > 2.0)
+                        {
+                            participationClass = "text-success";
+                            participationText = "參與度高";
+                        }
+                        else if (avgUsagePerUser > 1.5)
+                        {
+                            participationClass = "text-info";
+                            participationText = "參與度中等";
+                        }
+                        else
+                        {
+                            participationClass = "text-warning";
+                            participationText = "參與度偏低";
+                        }
+                    }
+                    <span class="@participationClass fw-bold">@participationText</span>
+                </div>
+                
+                <div>
+                    <h6>成本效益</h6>
+                    @{
+                        var costEffectClass = "";
+                        var costEffectText = "";
+                        var discountRatio = Model.TotalOrderAmount > 0 ? Model.TotalDiscountAmount / Model.TotalOrderAmount : 0m;
+                        if (discountRatio < 0.1m)
+                        {
+                            costEffectClass = "text-success";
+                            costEffectText = "成本控制良好";
+                        }
+                        else if (discountRatio < 0.2m)
+                        {
+                            costEffectClass = "text-info";
+                            costEffectText = "成本適中";
+                        }
+                        else
+                        {
+                            costEffectClass = "text-warning";
+                            costEffectText = "成本偏高";
+                        }
+                    }
+                    <span class="@costEffectClass fw-bold">@costEffectText</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 每日使用趨勢圖表 -->
+@if (Model.DailyUsageData.Any())
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">每日使用趨勢</h5>
+        </div>
+        <div class="card-body">
+            <canvas id="usageTrendChart" width="400" height="200"></canvas>
+        </div>
+    </div>
+}
+
+<!-- 熱門產品排行 -->
+@if (Model.TopProducts.Any())
+{
+    <div class="card mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">促銷產品表現排行</h5>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>排名</th>
+                            <th>產品名稱</th>
+                            <th>訂單數量</th>
+                            <th>銷售金額</th>
+                            <th>平均單價</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var (product, index) in Model.TopProducts.Select((p, i) => (p, i + 1)))
+                        {
+                            <tr>
+                                <td>
+                                    @if (index <= 3)
+                                    {
+                                        <span class="badge @(index == 1 ? "bg-warning" : index == 2 ? "bg-secondary" : "bg-success")">
+                                            @index
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span>@index</span>
+                                    }
+                                </td>
+                                <td>@product.ProductName</td>
+                                <td>@product.OrderCount</td>
+                                <td>$@product.Revenue.ToString("N0")</td>
+                                <td>$@(product.OrderCount > 0 ? ((decimal)(product.Revenue / product.OrderCount)).ToString("N2") : "0")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+}
+
+<!-- 建議 -->
+<div class="card">
+    <div class="card-header">
+        <h5 class="mb-0">優化建議</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-6">
+                <h6>促銷策略建議</h6>
+                <ul class="list-unstyled">
+                    @if (Model.TotalUsage < 10)
+                    {
+                        <li><i class="fas fa-lightbulb text-warning me-2"></i>考慮增加宣傳力度，提高活動曝光率</li>
+                        <li><i class="fas fa-lightbulb text-warning me-2"></i>檢視折扣力度是否足夠吸引消費者</li>
+                    }
+                    else if (Model.TotalUsage > 100)
+                    {
+                        <li><i class="fas fa-check text-success me-2"></i>活動反應熱烈，可考慮延長活動期間</li>
+                        <li><i class="fas fa-check text-success me-2"></i>可參考此活動模式設計類似促銷</li>
+                    }
+                    
+                    @if (Model.UniqueUsers > 0 && Model.TotalUsage / (double)Model.UniqueUsers < 1.2)
+                    {
+                        <li><i class="fas fa-lightbulb text-info me-2"></i>用戶重複使用率偏低，可增加購買誘因</li>
+                    }
+                    
+                    @if (Model.TotalOrderAmount > 0 && Model.TotalDiscountAmount / Model.TotalOrderAmount > 0.2m)
+                    {
+                        <li><i class="fas fa-exclamation text-warning me-2"></i>折扣成本偏高，建議調整折扣策略</li>
+                    }
+                </ul>
+            </div>
+            <div class="col-md-6">
+                <h6>後續行動</h6>
+                <ul class="list-unstyled">
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>分析高表現產品，加強推廣</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>追蹤用戶後續購買行為</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>收集用戶反饋，優化體驗</li>
+                    <li><i class="fas fa-arrow-right text-primary me-2"></i>制定相似活動的執行計畫</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        @if (Model.DailyUsageData.Any())
+        {
+            <text>
+            // 每日使用趨勢圖表
+            const ctx = document.getElementById('usageTrendChart').getContext('2d');
+            const usageTrendChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: [@Html.Raw(string.Join(",", Model.DailyUsageData.Select(d => $"'{d.Date:MM/dd}'")))],
+                    datasets: [{
+                        label: '使用次數',
+                        data: [@string.Join(",", Model.DailyUsageData.Select(d => d.Usage))],
+                        borderColor: 'rgb(75, 192, 192)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y'
+                    }, {
+                        label: '銷售金額',
+                        data: [@string.Join(",", Model.DailyUsageData.Select(d => d.Revenue))],
+                        borderColor: 'rgb(255, 99, 132)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        tension: 0.1,
+                        yAxisID: 'y1'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            title: {
+                                display: true,
+                                text: '日期'
+                            }
+                        },
+                        y: {
+                            type: 'linear',
+                            display: true,
+                            position: 'left',
+                            title: {
+                                display: true,
+                                text: '使用次數'
+                            }
+                        },
+                        y1: {
+                            type: 'linear',
+                            display: true,
+                            position: 'right',
+                            title: {
+                                display: true,
+                                text: '銷售金額 ($)'
+                            },
+                            grid: {
+                                drawOnChartArea: false,
+                            },
+                        }
+                    },
+                    plugins: {
+                        legend: {
+                            display: true
+                        },
+                        title: {
+                            display: true,
+                            text: '活動使用趨勢分析'
+                        }
+                    }
+                }
+            });
+            </text>
+        }
+    </script>
+}

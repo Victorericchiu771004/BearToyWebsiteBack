@@ -1,0 +1,400 @@
+@model BearToyWebsiteBack.Models.ViewModels.PromotionListViewModel
+@{
+    ViewData["Title"] = "行銷活動管理";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>行銷活動管理</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="fas fa-plus"></i> 新增活動
+    </a>
+</div>
+
+<!-- 篩選器 -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <label class="form-label">關鍵字</label>
+                <input type="text" class="form-control" name="filter" value="@Model.CurrentFilter" placeholder="搜尋活動名稱、描述或促銷碼">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">狀態</label>
+                <select class="form-select" name="status">
+                    <option value="">全部</option>
+                    @if (Model.CurrentStatus == "active")
+                    {
+                        <option value="active" selected>啟用</option>
+                    }
+                    else
+                    {
+                        <option value="active">啟用</option>
+                    }
+                    @if (Model.CurrentStatus == "inactive")
+                    {
+                        <option value="inactive" selected>停用</option>
+                    }
+                    else
+                    {
+                        <option value="inactive">停用</option>
+                    }
+                    @if (Model.CurrentStatus == "ongoing")
+                    {
+                        <option value="ongoing" selected>進行中</option>
+                    }
+                    else
+                    {
+                        <option value="ongoing">進行中</option>
+                    }
+                    @if (Model.CurrentStatus == "upcoming")
+                    {
+                        <option value="upcoming" selected>即將開始</option>
+                    }
+                    else
+                    {
+                        <option value="upcoming">即將開始</option>
+                    }
+                    @if (Model.CurrentStatus == "expired")
+                    {
+                        <option value="expired" selected>已過期</option>
+                    }
+                    else
+                    {
+                        <option value="expired">已過期</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">類型</label>
+                <select class="form-select" name="type">
+                    <option value="">全部</option>
+                    @if (Model.CurrentType == "Percentage")
+                    {
+                        <option value="Percentage" selected>百分比折扣</option>
+                    }
+                    else
+                    {
+                        <option value="Percentage">百分比折扣</option>
+                    }
+                    @if (Model.CurrentType == "FixedAmount")
+                    {
+                        <option value="FixedAmount" selected>固定金額</option>
+                    }
+                    else
+                    {
+                        <option value="FixedAmount">固定金額</option>
+                    }
+                    @if (Model.CurrentType == "FreeShipping")
+                    {
+                        <option value="FreeShipping" selected>免運費</option>
+                    }
+                    else
+                    {
+                        <option value="FreeShipping">免運費</option>
+                    }
+                    @if (Model.CurrentType == "BuyXGetY")
+                    {
+                        <option value="BuyXGetY" selected>買X送Y</option>
+                    }
+                    else
+                    {
+                        <option value="BuyXGetY">買X送Y</option>
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">&nbsp;</label>
+                <div>
+                    <button type="submit" class="btn btn-outline-primary">篩選</button>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-secondary">清除</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- 統計卡片 -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card bg-primary text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">總活動數</h6>
+                        <h3>@Model.TotalCount</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-tags fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">進行中</h6>
+                        <h3>@Model.Promotions.Count(p => p.CurrentStatus == "進行中")</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-play-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">即將開始</h6>
+                        <h3>@Model.Promotions.Count(p => p.CurrentStatus == "未開始")</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-clock fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card bg-danger text-white">
+            <div class="card-body">
+                <div class="d-flex justify-content-between">
+                    <div>
+                        <h6 class="card-title">已過期</h6>
+                        <h3>@Model.Promotions.Count(p => p.CurrentStatus == "已過期")</h3>
+                    </div>
+                    <div class="align-self-center">
+                        <i class="fas fa-times-circle fa-2x"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 活動列表 -->
+<div class="card">
+    <div class="card-body">
+        @if (Model.Promotions.Any())
+        {
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>活動名稱</th>
+                            <th>促銷類型</th>
+                            <th>折扣內容</th>
+                            <th>活動期間</th>
+                            <th>使用狀況</th>
+                            <th>狀態</th>
+                            <th width="200">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var promotion in Model.Promotions)
+                        {
+                            <tr>
+                                <td>
+                                    <div>
+                                        <strong>@promotion.Name</strong>
+                                        @if (!string.IsNullOrEmpty(promotion.PromoCode))
+                                        {
+                                            <br><small class="text-muted">代碼：@promotion.PromoCode</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="badge bg-secondary">
+                                        @promotion.BadgeText
+                                    </span>
+                                </td>
+                                <td>
+                                    @if (promotion.DiscountType == "Percentage")
+                                    {
+                                        <span>@promotion.DiscountValue% 折扣</span>
+                                    }
+                                    else if (promotion.DiscountType == "FixedAmount")
+                                    {
+                                        <span>$@promotion.DiscountValue 折扣</span>
+                                    }
+                                    @if (promotion.MinOrderAmount > 0)
+                                    {
+                                        <br><small class="text-muted">最低消費：$@promotion.MinOrderAmount</small>
+                                    }
+                                </td>
+                                <td>
+                                    <div>@promotion.DateRangeDisplay</div>
+                                    @if (promotion.IsExpired)
+                                    {
+                                        <small class="text-danger">已過期</small>
+                                    }
+                                    else if (promotion.IsNotStarted)
+                                    {
+                                        <small class="text-warning">未開始</small>
+                                    }
+                                    else
+                                    {
+                                        <small class="text-success">進行中</small>
+                                    }
+                                </td>
+                                <td>
+                                    @if (promotion.UsageLimit > 0)
+                                    {
+                                        <div class="progress mb-1" style="height: 6px;">
+                                            <div class="progress-bar" role="progressbar" 
+                                                 style="width: @promotion.UsagePercentage%" 
+                                                 aria-valuenow="@promotion.UsagePercentage" 
+                                                 aria-valuemin="0" aria-valuemax="100">
+                                            </div>
+                                        </div>
+                                        <small>@promotion.UsedCount / @promotion.UsageLimit</small>
+                                    }
+                                    else
+                                    {
+                                        <span>@promotion.UsedCount 次使用</span>
+                                    }
+                                </td>
+                                <td>
+                                    @switch (promotion.CurrentStatus)
+                                    {
+                                        case "進行中":
+                                            <span class="badge bg-success">@promotion.CurrentStatus</span>
+                                            break;
+                                        case "已停用":
+                                            <span class="badge bg-secondary">@promotion.CurrentStatus</span>
+                                            break;
+                                        case "未開始":
+                                            <span class="badge bg-warning">@promotion.CurrentStatus</span>
+                                            break;
+                                        case "已過期":
+                                            <span class="badge bg-danger">@promotion.CurrentStatus</span>
+                                            break;
+                                        default:
+                                            <span class="badge bg-light text-dark">@promotion.CurrentStatus</span>
+                                            break;
+                                    }
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a asp-action="Details" asp-route-id="@promotion.Id" 
+                                           class="btn btn-sm btn-outline-info">
+                                            <i class="bi bi-eye me-1"></i>檢視
+                                        </a>
+                                        <a asp-action="Edit" asp-route-id="@promotion.Id" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-pencil me-1"></i>編輯
+                                        </a>
+                                        <a asp-action="Analytics" asp-route-id="@promotion.Id" 
+                                           class="btn btn-sm btn-outline-success">
+                                            <i class="bi bi-graph-up me-1"></i>分析
+                                        </a>
+                                        <button type="button" class="btn btn-sm btn-outline-danger" 
+                                                onclick="deletePromotion(@promotion.Id, '@promotion.Name')">
+                                            <i class="bi bi-trash me-1"></i>刪除
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 分頁 -->
+            @if (Model.TotalPages > 1)
+            {
+                <nav aria-label="頁面導航" class="mt-3">
+                    <ul class="pagination justify-content-center">
+                        @if (Model.CurrentPage > 1)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.CurrentPage - 1)&filter=@Model.CurrentFilter&status=@Model.CurrentStatus&type=@Model.CurrentType">上一頁</a>
+                            </li>
+                        }
+
+                        @for (int i = Math.Max(1, Model.CurrentPage - 2); i <= Math.Min(Model.TotalPages, Model.CurrentPage + 2); i++)
+                        {
+                            <li class="page-item @(i == Model.CurrentPage ? "active" : "")">
+                                <a class="page-link" href="?page=@i&filter=@Model.CurrentFilter&status=@Model.CurrentStatus&type=@Model.CurrentType">@i</a>
+                            </li>
+                        }
+
+                        @if (Model.CurrentPage < Model.TotalPages)
+                        {
+                            <li class="page-item">
+                                <a class="page-link" href="?page=@(Model.CurrentPage + 1)&filter=@Model.CurrentFilter&status=@Model.CurrentStatus&type=@Model.CurrentType">下一頁</a>
+                            </li>
+                        }
+                    </ul>
+                </nav>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-tags fa-3x text-muted mb-3"></i>
+                <p class="text-muted">目前沒有任何行銷活動</p>
+                <a asp-action="Create" class="btn btn-primary">建立第一個活動</a>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 刪除確認 Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認刪除</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>確定要刪除活動「<span id="deletePromotionName"></span>」嗎？</p>
+                <p class="text-danger">此操作無法復原！</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">確認刪除</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deletePromotion(id, name) {
+            document.getElementById('deletePromotionName').textContent = name;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        // 顯示成功訊息
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                const toast = document.createElement('div');
+                toast.className = 'toast align-items-center text-white bg-success border-0 position-fixed top-0 end-0 m-3';
+                toast.setAttribute('role', 'alert');
+                toast.style.zIndex = '1055';
+                toast.innerHTML = `
+                    <div class="d-flex">
+                        <div class="toast-body">@TempData["SuccessMessage"]</div>
+                        <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+                    </div>
+                `;
+                document.body.appendChild(toast);
+                new bootstrap.Toast(toast).show();
+            });
+            </text>
+        }
+    </script>
+}

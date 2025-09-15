@@ -1,0 +1,1 @@
+dotnet ef dbcontext scaffold "Server=(localdb)\ProjectModels;Database=BearToyDB;Trusted_Connection=True;Encrypt=True;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -o Models -f --context BearToyDbContext

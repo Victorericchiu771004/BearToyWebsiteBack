@@ -1,0 +1,491 @@
+@model BearToyWebsiteBack.Models.ViewModels.PromotionViewModel
+@{
+    ViewData["Title"] = "編輯行銷活動";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>編輯行銷活動</h2>
+    <div>
+        <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-info">
+            <i class="fas fa-eye"></i> 檢視詳情
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> 返回列表
+        </a>
+    </div>
+</div>
+
+<form asp-action="Edit" method="post">
+    <input asp-for="Id" type="hidden" />
+    <input asp-for="UsedCount" type="hidden" />
+    <input asp-for="CreatedAt" type="hidden" />
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- 基本資訊 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">基本資訊</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="Name" class="form-label"></label>
+                                <input asp-for="Name" class="form-control" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="PromotionType" class="form-label"></label>
+                                <select asp-for="PromotionType" class="form-select">
+                                    <option value="">請選擇促銷類型</option>
+                                    <option value="Percentage">百分比折扣</option>
+                                    <option value="FixedAmount">固定金額折扣</option>
+                                    <option value="FreeShipping">免運費</option>
+                                    <option value="BuyXGetY">買X送Y</option>
+                                    <option value="Gift">滿額贈</option>
+                                </select>
+                                <span asp-validation-for="PromotionType" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Description" class="form-label"></label>
+                        <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                        <span asp-validation-for="Description" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 折扣設定 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">折扣設定</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="DiscountType" class="form-label"></label>
+                                <select asp-for="DiscountType" class="form-select">
+                                    <option value="">請選擇折扣類型</option>
+                                    <option value="Percentage">百分比</option>
+                                    <option value="FixedAmount">固定金額</option>
+                                </select>
+                                <span asp-validation-for="DiscountType" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="DiscountValue" class="form-label"></label>
+                                <input asp-for="DiscountValue" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="DiscountValue" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="MinOrderAmount" class="form-label"></label>
+                                <input asp-for="MinOrderAmount" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="MinOrderAmount" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="MaxDiscountAmount" class="form-label"></label>
+                                <input asp-for="MaxDiscountAmount" class="form-control" type="number" step="0.01" />
+                                <span asp-validation-for="MaxDiscountAmount" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="MinOrderQuantity" class="form-label"></label>
+                                <input asp-for="MinOrderQuantity" class="form-control" type="number" />
+                                <span asp-validation-for="MinOrderQuantity" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label asp-for="UsageLimit" class="form-label"></label>
+                                <input asp-for="UsageLimit" class="form-control" type="number" />
+                                <small class="form-text text-muted">0 表示無限制，目前已使用 @Model.UsedCount 次</small>
+                                <span asp-validation-for="UsageLimit" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 促銷代碼 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">促銷代碼</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="RequireCode" class="form-check-input" type="checkbox" />
+                            <label asp-for="RequireCode" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="mb-3" id="promoCodeField">
+                        <label asp-for="PromoCode" class="form-label"></label>
+                        <div class="input-group">
+                            <input asp-for="PromoCode" class="form-control" />
+                            <button type="button" class="btn btn-outline-secondary" onclick="generatePromoCode()">
+                                <i class="fas fa-random"></i> 重新產生
+                            </button>
+                        </div>
+                        <span asp-validation-for="PromoCode" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 適用範圍 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">適用範圍</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">適用產品</label>
+                        <select class="form-select" multiple id="productSelect" style="height: 150px;">
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                @if (Model.SelectedProductIds.Contains(product.Id))
+                                {
+                                    <option value="@product.Id" selected>@product.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@product.Id">@product.Name</option>
+                                }
+                            }
+                        </select>
+                        <small class="form-text text-muted">按住 Ctrl 可多選，不選擇表示適用於所有產品</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">排除產品</label>
+                        <select class="form-select" multiple id="excludeProductSelect" style="height: 100px;">
+                            @foreach (var product in ViewBag.Products)
+                            {
+                                @if (Model.ExcludedProductIds.Contains(product.Id))
+                                {
+                                    <option value="@product.Id" selected>@product.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@product.Id">@product.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">排除類別</label>
+                        <select class="form-select" multiple id="excludeCategorySelect" style="height: 100px;">
+                            @foreach (var category in ViewBag.Categories)
+                            {
+                                @if (Model.ExcludedCategoryIds.Contains(category.Id))
+                                {
+                                    <option value="@category.Id" selected>@category.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@category.Id">@category.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <!-- 活動狀態 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">活動狀態</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>目前狀態：</strong>
+                        @switch (Model.CurrentStatus)
+                        {
+                            case "進行中":
+                                <span class="badge bg-success">@Model.CurrentStatus</span>
+                                break;
+                            case "已停用":
+                                <span class="badge bg-secondary">@Model.CurrentStatus</span>
+                                break;
+                            case "未開始":
+                                <span class="badge bg-warning">@Model.CurrentStatus</span>
+                                break;
+                            case "已過期":
+                                <span class="badge bg-danger">@Model.CurrentStatus</span>
+                                break;
+                            default:
+                                <span class="badge bg-light text-dark">@Model.CurrentStatus</span>
+                                break;
+                        }
+                    </div>
+                    @if (Model.UsageLimit > 0)
+                    {
+                        <div class="mb-3">
+                            <strong>使用情況：</strong>
+                            <div class="progress mt-2" style="height: 20px;">
+                                <div class="progress-bar" role="progressbar" 
+                                     style="width: @Model.UsagePercentage%" 
+                                     aria-valuenow="@Model.UsagePercentage" 
+                                     aria-valuemin="0" aria-valuemax="100">
+                                    @Model.UsagePercentage.ToString("F1")%
+                                </div>
+                            </div>
+                            <small class="text-muted">@Model.UsedCount / @Model.UsageLimit 次</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <strong>總使用次數：</strong> @Model.UsedCount
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- 活動期間 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">活動期間</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label asp-for="StartDate" class="form-label"></label>
+                        <input asp-for="StartDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="StartDate" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="EndDate" class="form-label"></label>
+                        <input asp-for="EndDate" class="form-control" type="datetime-local" />
+                        <span asp-validation-for="EndDate" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="IsActive" class="form-check-input" type="checkbox" />
+                            <label asp-for="IsActive" class="form-check-label"></label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 顯示設定 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">顯示設定</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <label class="form-label">促銷標籤類型</label>
+                        <div class="row g-2">
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-general" value="一般促銷" autocomplete="off">
+                                <label class="btn btn-outline-primary w-100" for="badge-general">
+                                    <i class="bi bi-tag me-1"></i>一般促銷
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-sale" value="限時特價" autocomplete="off">
+                                <label class="btn btn-outline-success w-100" for="badge-sale">
+                                    <i class="bi bi-clock me-1"></i>限時特價
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-hot" value="熱門推薦" autocomplete="off">
+                                <label class="btn btn-outline-danger w-100" for="badge-hot">
+                                    <i class="bi bi-fire me-1"></i>熱門推薦
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-new" value="新品上市" autocomplete="off">
+                                <label class="btn btn-outline-info w-100" for="badge-new">
+                                    <i class="bi bi-star me-1"></i>新品上市
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-vip" value="VIP專屬" autocomplete="off">
+                                <label class="btn btn-outline-warning w-100" for="badge-vip">
+                                    <i class="bi bi-crown me-1"></i>VIP專屬
+                                </label>
+                            </div>
+                            <div class="col-6 col-md-4">
+                                <input type="radio" class="btn-check" name="BadgeType" id="badge-free" value="免運優惠" autocomplete="off">
+                                <label class="btn btn-outline-secondary w-100" for="badge-free">
+                                    <i class="bi bi-truck me-1"></i>免運優惠
+                                </label>
+                            </div>
+                        </div>
+                        <input type="hidden" asp-for="BadgeText" />
+                        <input type="hidden" asp-for="BadgeColor" />
+                        <span asp-validation-for="BadgeText" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="SortOrder" class="form-label"></label>
+                        <input asp-for="SortOrder" class="form-control" type="number" />
+                        <span asp-validation-for="SortOrder" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 進階設定 -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">進階設定</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <div class="form-check">
+                            <input asp-for="CanStackWithOthers" class="form-check-input" type="checkbox" />
+                            <label asp-for="CanStackWithOthers" class="form-check-label"></label>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="Priority" class="form-label"></label>
+                        <input asp-for="Priority" class="form-control" type="number" />
+                        <small class="form-text text-muted">數字越大優先級越高</small>
+                        <span asp-validation-for="Priority" class="text-danger"></span>
+                    </div>
+                    <div class="mb-3">
+                        <label asp-for="ExclusionGroup" class="form-label"></label>
+                        <input asp-for="ExclusionGroup" class="form-control" />
+                        <small class="form-text text-muted">相同群組的促銷不能同時使用</small>
+                        <span asp-validation-for="ExclusionGroup" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 操作按鈕 -->
+            <div class="card">
+                <div class="card-body">
+                    <button type="submit" class="btn btn-primary w-100 mb-2">
+                        <i class="fas fa-save"></i> 更新活動
+                    </button>
+                    <a asp-action="Analytics" asp-route-id="@Model.Id" class="btn btn-outline-success w-100 mb-2">
+                        <i class="fas fa-chart-bar"></i> 檢視分析
+                    </a>
+                    <a asp-action="Index" class="btn btn-outline-secondary w-100">
+                        <i class="fas fa-times"></i> 取消
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隱藏欄位用於傳遞選中的項目 -->
+    <div id="hiddenFields"></div>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // 處理促銷代碼顯示/隱藏
+            const requireCodeCheck = document.getElementById('RequireCode');
+            const promoCodeField = document.getElementById('promoCodeField');
+            
+            function togglePromoCodeField() {
+                promoCodeField.style.display = requireCodeCheck.checked ? 'block' : 'none';
+            }
+            
+            requireCodeCheck.addEventListener('change', togglePromoCodeField);
+            togglePromoCodeField();
+            
+            // 處理標籤類型選擇
+            const badgeTypeRadios = document.querySelectorAll('input[name="BadgeType"]');
+            const badgeTextField = document.getElementById('BadgeText');
+            const badgeColorField = document.getElementById('BadgeColor');
+            
+            const badgeMapping = {
+                '一般促銷': { text: '一般促銷', color: '#007bff' },
+                '限時特價': { text: '限時特價', color: '#28a745' },
+                '熱門推薦': { text: '熱門推薦', color: '#dc3545' },
+                '新品上市': { text: '新品上市', color: '#17a2b8' },
+                'VIP專屬': { text: 'VIP專屬', color: '#ffc107' },
+                '免運優惠': { text: '免運優惠', color: '#6c757d' }
+            };
+            
+            badgeTypeRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.checked) {
+                        const mapping = badgeMapping[this.value];
+                        badgeTextField.value = mapping.text;
+                        badgeColorField.value = mapping.color;
+                    }
+                });
+            });
+            
+            // 根據現有值設定選中狀態
+            const currentBadgeText = badgeTextField.value;
+            const matchingRadio = Array.from(badgeTypeRadios).find(radio => 
+                badgeMapping[radio.value] && badgeMapping[radio.value].text === currentBadgeText
+            );
+            if (matchingRadio) {
+                matchingRadio.checked = true;
+            } else {
+                // 如果沒有匹配的，預設選擇第一個
+                document.getElementById('badge-general').checked = true;
+            }
+            
+            // 處理表單提交時的多選項目
+            document.querySelector('form').addEventListener('submit', function() {
+                const hiddenFields = document.getElementById('hiddenFields');
+                hiddenFields.innerHTML = '';
+                
+                // 適用產品
+                const selectedProducts = Array.from(document.getElementById('productSelect').selectedOptions);
+                selectedProducts.forEach((option, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `SelectedProductIds[${index}]`;
+                    input.value = option.value;
+                    hiddenFields.appendChild(input);
+                });
+                
+                // 排除產品
+                const excludedProducts = Array.from(document.getElementById('excludeProductSelect').selectedOptions);
+                excludedProducts.forEach((option, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `ExcludedProductIds[${index}]`;
+                    input.value = option.value;
+                    hiddenFields.appendChild(input);
+                });
+                
+                // 排除類別
+                const excludedCategories = Array.from(document.getElementById('excludeCategorySelect').selectedOptions);
+                excludedCategories.forEach((option, index) => {
+                    const input = document.createElement('input');
+                    input.type = 'hidden';
+                    input.name = `ExcludedCategoryIds[${index}]`;
+                    input.value = option.value;
+                    hiddenFields.appendChild(input);
+                });
+            });
+        });
+        
+        function generatePromoCode() {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+            let result = '';
+            for (let i = 0; i < 8; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            document.getElementById('PromoCode').value = result;
+        }
+    </script>
+}

@@ -1,0 +1,71 @@
+@model BearToyWebsiteBack.Models.Product
+
+@{
+    ViewData["Title"] = "刪除商品";
+}
+
+<h1>刪除商品</h1>
+
+<div class="alert alert-danger">
+    <h3>您確定要刪除這個商品嗎？</h3>
+    <p>刪除後將無法復原，相關的圖片也會一併刪除。</p>
+</div>
+
+<div>
+    <h4>商品資料</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            商品編號
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Sku)
+        </dd>
+        <dt class="col-sm-2">
+            商品名稱
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            商品描述
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            價格
+        </dt>
+        <dd class="col-sm-10">
+            NT$ @Html.DisplayFor(model => model.Price)
+        </dd>
+        <dt class="col-sm-2">
+            庫存數量
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockQuantity)
+        </dd>
+        <dt class="col-sm-2">
+            分類
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Category.Name)
+            @if (Model.SubCategory != null)
+            {
+                <span> / @Html.DisplayFor(model => model.SubCategory.Name)</span>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            建立時間
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")
+        </dd>
+    </dl>
+    
+    <form asp-action="Delete">
+        <input type="hidden" asp-for="Id" />
+        <input type="submit" value="確認刪除" class="btn btn-danger" /> |
+        <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+    </form>
+</div>

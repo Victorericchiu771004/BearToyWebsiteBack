@@ -1,0 +1,76 @@
+@using System.Security.Claims
+
+<ul class="navbar-nav">
+@if (User.Identity?.IsAuthenticated == true && User.HasClaim("AdminType", "BackendAdmin"))
+{
+    <li class="nav-item dropdown">
+        <a class="nav-link dropdown-toggle text-dark" href="#" id="navbarDropdown" role="button" data-bs-toggle="dropdown">
+            <i class="bi bi-person-circle me-1"></i>
+            @(User.FindFirst("FullName")?.Value ?? User.Identity.Name ?? "管理員")
+        </a>
+        <ul class="dropdown-menu dropdown-menu-end">
+            <li><h6 class="dropdown-header">管理員資訊</h6></li>
+            <li>
+                <span class="dropdown-item-text">
+                    <small class="text-muted">帳號：@User.Identity.Name</small>
+                </span>
+            </li>
+            <li><hr class="dropdown-divider"></li>
+            <li>
+                <a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                    <i class="bi bi-key me-2"></i>變更密碼
+                </a>
+            </li>
+            <li>
+                <form asp-controller="AdminAuth" asp-action="Logout" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="dropdown-item text-danger">
+                        <i class="bi bi-box-arrow-right me-2"></i>登出
+                    </button>
+                </form>
+            </li>
+        </ul>
+    </li>
+}
+else
+{
+    <li class="nav-item">
+        <a class="nav-link text-dark" asp-controller="AdminAuth" asp-action="Login">
+            <i class="bi bi-box-arrow-in-right me-2"></i>登入
+        </a>
+    </li>
+}
+</ul>
+
+<!-- 變更密碼 Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">變更密碼</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="changePasswordForm">
+                    @Html.AntiForgeryToken()
+                    <div class="mb-3">
+                        <label class="form-label">目前密碼</label>
+                        <input type="password" class="form-control" name="currentPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">新密碼</label>
+                        <input type="password" class="form-control" name="newPassword" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">確認新密碼</label>
+                        <input type="password" class="form-control" name="confirmPassword" required>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <button type="submit" form="changePasswordForm" class="btn btn-primary">確認變更</button>
+            </div>
+        </div>
+    </div>
+</div>

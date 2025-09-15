@@ -1,0 +1,355 @@
+@model BearToyWebsiteBack.Models.ViewModels.OrderStatusUpdateViewModel
+@using BearToyWebsiteBack.Models.ViewModels
+
+@{
+    ViewData["Title"] = "更新訂單狀態";
+}
+
+<div class="fade-in">
+    <!-- 頁面標題和導覽 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-arrow-repeat text-warning me-2"></i>
+                更新訂單狀態
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-action="Index">訂單管理</a></li>
+                    <li class="breadcrumb-item"><a asp-action="Details" asp-route-id="@Model.OrderId">@Model.OrderNumber</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">更新狀態</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline-info me-2">
+                <i class="bi bi-eye me-2"></i>
+                查看詳細
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                返回列表
+            </a>
+        </div>
+    </div>
+
+    <!-- 表單內容 -->
+    <form asp-action="UpdateStatus" method="post">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        <input type="hidden" asp-for="OrderId" />
+        <input type="hidden" asp-for="OrderNumber" />
+        
+        <div class="row">
+            <!-- 狀態更新 -->
+            <div class="col-xl-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-clipboard-data me-2"></i>
+                            訂單狀態
+                        </h5>
+                        <small class="text-muted">訂單編號: @Model.OrderNumber</small>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="Status" class="form-label">
+                                    訂單狀態 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="Status" class="form-select" required>
+                                    @foreach (var status in OrderStatusHelper.OrderStatuses)
+                                    {
+                                        <option value="@status.Key">@status.Value</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="PaymentStatus" class="form-label">
+                                    付款狀態 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="PaymentStatus" class="form-select" required>
+                                    @foreach (var status in OrderStatusHelper.PaymentStatuses)
+                                    {
+                                        <option value="@status.Key">@status.Value</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="PaymentStatus" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="ShippingStatus" class="form-label">
+                                    出貨狀態 <span class="text-danger">*</span>
+                                </label>
+                                <select asp-for="ShippingStatus" class="form-select" required>
+                                    @foreach (var status in OrderStatusHelper.ShippingStatuses)
+                                    {
+                                        <option value="@status.Key">@status.Value</option>
+                                    }
+                                </select>
+                                <span asp-validation-for="ShippingStatus" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 追蹤資訊 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-truck me-2"></i>
+                            物流資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="TrackingNumber" class="form-label">追蹤號碼</label>
+                            <input asp-for="TrackingNumber" class="form-control" placeholder="請輸入物流追蹤號碼" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                提供追蹤號碼讓客戶可以查詢配送進度
+                            </div>
+                            <span asp-validation-for="TrackingNumber" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 時間設定 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-calendar-event me-2"></i>
+                            時間記錄
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label asp-for="PaymentConfirmationDate" class="form-label">付款確認時間</label>
+                                <input asp-for="PaymentConfirmationDate" type="datetime-local" class="form-control" />
+                                <div class="form-text">留空則自動設定</div>
+                                <span asp-validation-for="PaymentConfirmationDate" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="ShippingDate" class="form-label">出貨時間</label>
+                                <input asp-for="ShippingDate" type="datetime-local" class="form-control" />
+                                <div class="form-text">留空則自動設定</div>
+                                <span asp-validation-for="ShippingDate" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-4">
+                                <label asp-for="CompletionDate" class="form-label">完成時間</label>
+                                <input asp-for="CompletionDate" type="datetime-local" class="form-control" />
+                                <div class="form-text">留空則自動設定</div>
+                                <span asp-validation-for="CompletionDate" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 備註 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-sticky me-2"></i>
+                            備註資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="Notes" class="form-label">內部備註</label>
+                            <textarea asp-for="Notes" class="form-control" rows="4" placeholder="新增處理備註或特殊說明..."></textarea>
+                            <span asp-validation-for="Notes" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 側邊欄 - 狀態指南 -->
+            <div class="col-xl-4">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightbulb me-2"></i>
+                            狀態變更指南
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="accordion accordion-flush" id="statusGuide">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#orderStatusGuide">
+                                        訂單狀態說明
+                                    </button>
+                                </h2>
+                                <div id="orderStatusGuide" class="accordion-collapse collapse" data-bs-parent="#statusGuide">
+                                    <div class="accordion-body">
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><span class="badge bg-warning text-dark me-2">待處理</span> 新建立的訂單</li>
+                                            <li class="mb-2"><span class="badge bg-info me-2">已確認</span> 訂單已確認，等待處理</li>
+                                            <li class="mb-2"><span class="badge bg-primary me-2">處理中</span> 正在備貨處理</li>
+                                            <li class="mb-2"><span class="badge bg-success me-2">已出貨</span> 商品已寄出</li>
+                                            <li class="mb-2"><span class="badge bg-success me-2">已完成</span> 訂單處理完成</li>
+                                            <li class="mb-2"><span class="badge bg-danger me-2">已取消</span> 訂單已取消</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#paymentStatusGuide">
+                                        付款狀態說明
+                                    </button>
+                                </h2>
+                                <div id="paymentStatusGuide" class="accordion-collapse collapse" data-bs-parent="#statusGuide">
+                                    <div class="accordion-body">
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><span class="badge bg-warning text-dark me-2">待付款</span> 等待客戶付款</li>
+                                            <li class="mb-2"><span class="badge bg-success me-2">已付款</span> 付款已確認</li>
+                                            <li class="mb-2"><span class="badge bg-danger me-2">付款失敗</span> 付款處理失敗</li>
+                                            <li class="mb-2"><span class="badge bg-info me-2">已退款</span> 已處理退款</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#shippingStatusGuide">
+                                        出貨狀態說明
+                                    </button>
+                                </h2>
+                                <div id="shippingStatusGuide" class="accordion-collapse collapse" data-bs-parent="#statusGuide">
+                                    <div class="accordion-body">
+                                        <ul class="list-unstyled">
+                                            <li class="mb-2"><span class="badge bg-secondary me-2">未出貨</span> 尚未開始出貨</li>
+                                            <li class="mb-2"><span class="badge bg-warning text-dark me-2">備貨中</span> 正在準備出貨</li>
+                                            <li class="mb-2"><span class="badge bg-primary me-2">已出貨</span> 商品已交付物流</li>
+                                            <li class="mb-2"><span class="badge bg-info me-2">運送中</span> 商品運送途中</li>
+                                            <li class="mb-2"><span class="badge bg-success me-2">已送達</span> 商品已送達</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速設定 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-lightning me-2"></i>
+                            快速設定
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="button" class="btn btn-outline-success btn-sm" onclick="setStatusSet('confirmed', 'paid', 'preparing')">
+                                <i class="bi bi-check-circle me-1"></i>
+                                確認訂單 + 付款完成
+                            </button>
+                            <button type="button" class="btn btn-outline-primary btn-sm" onclick="setStatusSet('shipped', 'paid', 'shipped')">
+                                <i class="bi bi-truck me-1"></i>
+                                標記已出貨
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" onclick="setStatusSet('completed', 'paid', 'delivered')">
+                                <i class="bi bi-check-all me-1"></i>
+                                完成訂單
+                            </button>
+                            <button type="button" class="btn btn-outline-danger btn-sm" onclick="setStatusSet('cancelled', 'refunded', 'not_shipped')">
+                                <i class="bi bi-x-circle me-1"></i>
+                                取消訂單 + 退款
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按鈕 -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-warning btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>
+                                更新狀態
+                            </button>
+                            <a asp-action="Details" asp-route-id="@Model.OrderId" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                取消
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // 狀態聯動邏輯
+            $('#Status').change(function() {
+                var status = $(this).val();
+                updateRelatedStatus(status);
+            });
+            
+            // 設定當前日期時間到輸入欄位
+            function setCurrentDateTime(fieldId) {
+                var now = new Date();
+                var isoString = now.toISOString().slice(0, 16);
+                $('#' + fieldId).val(isoString);
+            }
+            
+            // 根據訂單狀態自動更新相關狀態
+            function updateRelatedStatus(orderStatus) {
+                var paymentSelect = $('#PaymentStatus');
+                var shippingSelect = $('#ShippingStatus');
+                
+                switch(orderStatus) {
+                    case 'confirmed':
+                        if (paymentSelect.val() === 'pending') {
+                            paymentSelect.val('paid');
+                        }
+                        if (shippingSelect.val() === 'not_shipped') {
+                            shippingSelect.val('preparing');
+                        }
+                        break;
+                    case 'shipped':
+                        paymentSelect.val('paid');
+                        shippingSelect.val('shipped');
+                        break;
+                    case 'completed':
+                        paymentSelect.val('paid');
+                        shippingSelect.val('delivered');
+                        break;
+                    case 'cancelled':
+                        if (paymentSelect.val() === 'paid') {
+                            paymentSelect.val('refunded');
+                        }
+                        shippingSelect.val('not_shipped');
+                        break;
+                }
+            }
+        });
+        
+        // 快速設定狀態組合
+        function setStatusSet(orderStatus, paymentStatus, shippingStatus) {
+            $('#Status').val(orderStatus);
+            $('#PaymentStatus').val(paymentStatus);
+            $('#ShippingStatus').val(shippingStatus);
+        }
+        
+        // 設定當前時間
+        function setCurrentTime(fieldId) {
+            var now = new Date();
+            var isoString = now.toISOString().slice(0, 16);
+            $('#' + fieldId).val(isoString);
+        }
+    </script>
+}

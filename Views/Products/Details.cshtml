@@ -1,0 +1,113 @@
+@model BearToyWebsiteBack.Models.Product
+
+@{
+    ViewData["Title"] = "商品詳細資料";
+}
+
+<h1>商品詳細資料</h1>
+
+<div>
+    <h4>@Model.Name</h4>
+    <hr />
+    <dl class="row">
+        <dt class="col-sm-2">
+            商品編號
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Sku)
+        </dd>
+        <dt class="col-sm-2">
+            商品名稱
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Name)
+        </dd>
+        <dt class="col-sm-2">
+            商品描述
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Description)
+        </dd>
+        <dt class="col-sm-2">
+            價格
+        </dt>
+        <dd class="col-sm-10">
+            NT$ @Html.DisplayFor(model => model.Price)
+        </dd>
+        <dt class="col-sm-2">
+            庫存數量
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.StockQuantity)
+        </dd>
+        <dt class="col-sm-2">
+            分類
+        </dt>
+        <dd class="col-sm-10">
+            @Html.DisplayFor(model => model.Category.Name)
+            @if (Model.SubCategory != null)
+            {
+                <span> / @Html.DisplayFor(model => model.SubCategory.Name)</span>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            精選商品
+        </dt>
+        <dd class="col-sm-10">
+            @if (Model.IsFeatured)
+            {
+                <span class="badge bg-success">是</span>
+            }
+            else
+            {
+                <span class="badge bg-secondary">否</span>
+            }
+        </dd>
+        <dt class="col-sm-2">
+            建立時間
+        </dt>
+        <dd class="col-sm-10">
+            @Model.CreatedAt.ToString("yyyy/MM/dd HH:mm:ss")
+        </dd>
+        <dt class="col-sm-2">
+            更新時間
+        </dt>
+        <dd class="col-sm-10">
+            @Model.UpdatedAt.ToString("yyyy/MM/dd HH:mm:ss")
+        </dd>
+    </dl>
+    
+    <h4>商品圖片</h4>
+    <div class="row">
+        @if (Model.ProductImages.Any())
+        {
+            @foreach (var image in Model.ProductImages.OrderBy(pi => pi.SortOrder))
+            {
+                <div class="col-md-3 mb-3">
+                    <div class="card">
+                        <img src="@image.ImageUrl" class="card-img-top" alt="@image.AltText" style="height: 200px; object-fit: cover;">
+                        <div class="card-body">
+                            <p class="card-text">
+                                @if (image.IsMainImage)
+                                {
+                                    <span class="badge bg-primary">主圖</span>
+                                }
+                                <small class="text-muted">排序: @image.SortOrder</small>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="col-12">
+                <p class="text-muted">此商品尚無圖片</p>
+            </div>
+        }
+    </div>
+</div>
+<div>
+    <a asp-action="Edit" asp-route-id="@Model?.Id" class="btn btn-warning">編輯</a> |
+    <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+</div>

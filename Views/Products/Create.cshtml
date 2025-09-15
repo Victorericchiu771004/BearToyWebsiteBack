@@ -1,0 +1,314 @@
+@model BearToyWebsiteBack.Models.Product
+
+@{
+    ViewData["Title"] = "新增商品";
+}
+
+<div class="fade-in">
+    <!-- 頁面標題和導覽 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-plus-circle text-primary me-2"></i>
+                新增商品
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb mb-0">
+                    <li class="breadcrumb-item"><a asp-action="Index">商品管理</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">新增商品</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="bi bi-arrow-left me-2"></i>
+                返回列表
+            </a>
+        </div>
+    </div>
+
+    <!-- 表單內容 -->
+    <form asp-action="Create" enctype="multipart/form-data">
+        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+        
+        <div class="row">
+            <!-- 基本資訊 -->
+            <div class="col-xl-8">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-info-circle me-2"></i>
+                            基本資訊
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Sku" class="form-label">
+                                    商品編號 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Sku" class="form-control" placeholder="請輸入商品編號" />
+                                <span asp-validation-for="Sku" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="Name" class="form-label">
+                                    商品名稱 <span class="text-danger">*</span>
+                                </label>
+                                <input asp-for="Name" class="form-control" placeholder="請輸入商品名稱" />
+                                <span asp-validation-for="Name" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-12">
+                                <label asp-for="Description" class="form-label">
+                                    商品描述 <span class="text-danger">*</span>
+                                </label>
+                                <textarea asp-for="Description" class="form-control" rows="5" placeholder="請詳細描述商品特色、規格等資訊"></textarea>
+                                <span asp-validation-for="Description" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 定價與庫存 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-currency-dollar me-2"></i>
+                            定價與庫存
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-md-6">
+                                <label asp-for="Price" class="form-label">
+                                    售價 (NT$) <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <span class="input-group-text">NT$</span>
+                                    <input asp-for="Price" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" />
+                                </div>
+                                <span asp-validation-for="Price" class="text-danger"></span>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label asp-for="StockQuantity" class="form-label">
+                                    庫存數量 <span class="text-danger">*</span>
+                                </label>
+                                <div class="input-group">
+                                    <input asp-for="StockQuantity" class="form-control" type="number" min="0" placeholder="0" />
+                                    <span class="input-group-text">件</span>
+                                </div>
+                                <span asp-validation-for="StockQuantity" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品圖片 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>
+                            商品圖片
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">選擇圖片</label>
+                            <input type="file" name="productImages" class="form-control" multiple accept="image/*" id="imageInput" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                可以選擇多個圖片檔案，第一張圖片將自動設為主圖。支援 JPG、PNG、GIF 格式。
+                            </div>
+                        </div>
+                        
+                        <!-- 圖片預覽區域 -->
+                        <div id="imagePreviewContainer" class="border rounded p-3 bg-light" style="display: none;">
+                            <h6 class="mb-3">圖片預覽</h6>
+                            <div id="imagePreviewList" class="row g-3"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 側邊欄 -->
+            <div class="col-xl-4">
+                <!-- 分類設定 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-tags me-2"></i>
+                            分類設定
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label asp-for="CategoryId" class="form-label">
+                                主分類 <span class="text-danger">*</span>
+                            </label>
+                            <select asp-for="CategoryId" class="form-select" asp-items="ViewBag.CategoryId" id="categorySelect">
+                                <option value="">請選擇主分類</option>
+                            </select>
+                            <span asp-validation-for="CategoryId" class="text-danger"></span>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label asp-for="SubCategoryId" class="form-label">子分類</label>
+                            <select asp-for="SubCategoryId" class="form-select" id="subCategorySelect">
+                                <option value="">請先選擇主分類</option>
+                            </select>
+                            <span asp-validation-for="SubCategoryId" class="text-danger"></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品設定 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-gear me-2"></i>
+                            商品設定
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" asp-for="IsFeatured" id="featuredSwitch" />
+                            <label class="form-check-label" for="featuredSwitch">
+                                <strong>精選商品</strong>
+                                <small class="d-block text-muted">精選商品會在首頁顯示</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作按鈕 -->
+                <div class="card">
+                    <div class="card-body">
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="bi bi-check-circle me-2"></i>
+                                新增商品
+                            </button>
+                            <a asp-action="Index" class="btn btn-outline-secondary">
+                                <i class="bi bi-x-circle me-2"></i>
+                                取消
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        $(document).ready(function() {
+            // 分類連動功能
+            $('#categorySelect').change(function() {
+                var categoryId = $(this).val();
+                $('#subCategorySelect').empty();
+                $('#subCategorySelect').append('<option value="">請選擇子分類</option>');
+                
+                if (categoryId) {
+                    $.ajax({
+                        url: '@Url.Action("GetSubCategories", "Products")',
+                        type: 'GET',
+                        data: { categoryId: categoryId },
+                        success: function(data) {
+                            $.each(data, function(index, item) {
+                                $('#subCategorySelect').append('<option value="' + item.value + '">' + item.text + '</option>');
+                            });
+                        }
+                    });
+                } else {
+                    $('#subCategorySelect').append('<option value="">請先選擇主分類</option>');
+                }
+            });
+            
+            // 圖片預覽功能
+            $('#imageInput').change(function() {
+                var files = this.files;
+                var previewContainer = $('#imagePreviewContainer');
+                var previewList = $('#imagePreviewList');
+                
+                previewList.empty();
+                
+                if (files.length > 0) {
+                    previewContainer.show();
+                    
+                    for (var i = 0; i < files.length; i++) {
+                        if (files[i].type.match('image.*')) {
+                            var reader = new FileReader();
+                            reader.onload = (function(file, index) {
+                                return function(e) {
+                                    var isMainImage = index === 0;
+                                    var previewHtml = `
+                                        <div class="col-6 col-md-4">
+                                            <div class="card">
+                                                <img src="${e.target.result}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                <div class="card-body p-2">
+                                                    <small class="text-muted d-block">${file.name}</small>
+                                                    ${isMainImage ? '<span class="badge bg-primary mt-1">主圖</span>' : ''}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    `;
+                                    previewList.append(previewHtml);
+                                };
+                            })(files[i], i);
+                            reader.readAsDataURL(files[i]);
+                        }
+                    }
+                } else {
+                    previewContainer.hide();
+                }
+            });
+            
+            // 表單驗證增強
+            $('form').submit(function(e) {
+                var isValid = true;
+                var firstErrorField = null;
+                
+                // 檢查必填欄位
+                $('input[required], select[required], textarea[required]').each(function() {
+                    if (!$(this).val().trim()) {
+                        isValid = false;
+                        $(this).addClass('is-invalid');
+                        if (!firstErrorField) {
+                            firstErrorField = $(this);
+                        }
+                    } else {
+                        $(this).removeClass('is-invalid');
+                    }
+                });
+                
+                if (!isValid) {
+                    e.preventDefault();
+                    if (firstErrorField) {
+                        firstErrorField.focus();
+                    }
+                    
+                    // 顯示錯誤提示
+                    if ($('.alert-danger').length === 0) {
+                        $('form').prepend(`
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                請填寫所有必填欄位
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `);
+                    }
+                }
+            });
+            
+            // 移除無效狀態當用戶開始輸入
+            $('input, select, textarea').on('input change', function() {
+                $(this).removeClass('is-invalid');
+            });
+        });
+    </script>
+}

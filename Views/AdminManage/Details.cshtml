@@ -1,0 +1,195 @@
+@model BearToyWebsiteBack.Models.ViewModels.AdminDetailViewModel
+@{
+    ViewData["Title"] = "管理員詳情";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>管理員詳情</h2>
+    <div>
+        <a asp-action="Edit" asp-route-id="@Model.AdminId" class="btn btn-primary">
+            <i class="bi bi-pencil me-1"></i>編輯管理員
+        </a>
+        <a asp-action="Index" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left me-1"></i>返回列表
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <!-- 基本資訊 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">基本資訊</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">使用者名稱</dt>
+                            <dd class="col-sm-8">@Model.Username</dd>
+                            
+                            <dt class="col-sm-4">姓名</dt>
+                            <dd class="col-sm-8">@Model.FullName</dd>
+                            
+                            <dt class="col-sm-4">Email</dt>
+                            <dd class="col-sm-8">
+                                @if (!string.IsNullOrEmpty(Model.Email))
+                                {
+                                    <a href="mailto:@Model.Email">@Model.Email</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">未設定</span>
+                                }
+                            </dd>
+                            
+                            <dt class="col-sm-4">電話</dt>
+                            <dd class="col-sm-8">
+                                @if (!string.IsNullOrEmpty(Model.Phone))
+                                {
+                                    <a href="tel:@Model.Phone">@Model.Phone</a>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">未設定</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                    <div class="col-md-6">
+                        <dl class="row">
+                            <dt class="col-sm-4">帳號狀態</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.IsLocked)
+                                {
+                                    <span class="badge bg-warning">鎖定</span>
+                                    @if (Model.LockedUntil.HasValue)
+                                    {
+                                        <br><small class="text-muted">鎖定到：@Model.LockedUntil.Value.ToString("yyyy/MM/dd HH:mm")</small>
+                                    }
+                                }
+                                else if (Model.IsActive)
+                                {
+                                    <span class="badge bg-success">啟用</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">停用</span>
+                                }
+                            </dd>
+                            
+                            <dt class="col-sm-4">建立時間</dt>
+                            <dd class="col-sm-8">@Model.CreatedAt.ToString("yyyy/MM/dd HH:mm")</dd>
+                            
+                            <dt class="col-sm-4">最後登入</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.LastLoginAt.HasValue)
+                                {
+                                    @Model.LastLoginAt.Value.ToString("yyyy/MM/dd HH:mm")
+                                    @if (!string.IsNullOrEmpty(Model.LastLoginIp))
+                                    {
+                                        <br><small class="text-muted">IP：@Model.LastLoginIp</small>
+                                    }
+                                }
+                                else
+                                {
+                                    <span class="text-muted">從未登入</span>
+                                }
+                            </dd>
+                            
+                            <dt class="col-sm-4">登入嘗試</dt>
+                            <dd class="col-sm-8">
+                                @if (Model.LoginAttempts > 0)
+                                {
+                                    <span class="text-warning">@Model.LoginAttempts 次失敗</span>
+                                }
+                                else
+                                {
+                                    <span class="text-success">正常</span>
+                                }
+                            </dd>
+                        </dl>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 權限明細 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">權限明細</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Permissions.Any())
+                {
+                    @foreach (var category in Model.Permissions.GroupBy(p => p.Category).OrderBy(g => g.Key))
+                    {
+                        <div class="mb-3">
+                            <h6 class="text-primary">@category.Key</h6>
+                            <div class="row">
+                                @foreach (var permission in category.OrderBy(p => p.PermissionName))
+                                {
+                                    <div class="col-md-6">
+                                        <span class="badge bg-light text-dark me-1">@permission.PermissionName</span>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">此管理員沒有任何權限</div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <!-- 角色資訊 -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="mb-0">指派角色</h5>
+            </div>
+            <div class="card-body">
+                @if (Model.Roles.Any())
+                {
+                    @foreach (var role in Model.Roles)
+                    {
+                        <div class="mb-2">
+                            <span class="badge bg-info">@role.RoleName</span>
+                            @if (!string.IsNullOrEmpty(role.Description))
+                            {
+                                <br><small class="text-muted">@role.Description</small>
+                            }
+                        </div>
+                    }
+                }
+                else
+                {
+                    <div class="text-muted">未指派任何角色</div>
+                }
+            </div>
+        </div>
+
+        <!-- 快速操作 -->
+        @if (Model.IsLocked)
+        {
+            <div class="card">
+                <div class="card-header bg-warning text-dark">
+                    <h5 class="mb-0">帳號已鎖定</h5>
+                </div>
+                <div class="card-body">
+                    <p>此帳號由於多次登入失敗而被鎖定。</p>
+                    <form asp-action="Unlock" asp-route-id="@Model.AdminId" method="post" class="d-inline">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-warning w-100">
+                            <i class="bi bi-unlock me-1"></i>解除鎖定
+                        </button>
+                    </form>
+                </div>
+            </div>
+        }
+    </div>
+</div>

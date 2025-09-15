@@ -1,0 +1,128 @@
+@model Microsoft.AspNetCore.Identity.IdentityUser
+
+@{
+    ViewData["Title"] = "會員詳細資料";
+}
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="card-title">@Model.UserName 的詳細資料</h4>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">使用者名稱：</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.UserName)</dd>
+                                
+                                <dt class="col-sm-4">電子郵件：</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Email)</dd>
+                                
+                                <dt class="col-sm-4">電話號碼：</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.PhoneNumber)</dd>
+                                
+                                <dt class="col-sm-4">會員ID：</dt>
+                                <dd class="col-sm-8">@Html.DisplayFor(model => model.Id)</dd>
+                            </dl>
+                        </div>
+                        <div class="col-md-6">
+                            <dl class="row">
+                                <dt class="col-sm-4">會員等級：</dt>
+                                <dd class="col-sm-8">
+                                    <span class="badge bg-info">
+                                        一般會員
+                                    </span>
+                                </dd>
+                                
+                                <dt class="col-sm-4">帳號狀態：</dt>
+                                <dd class="col-sm-8">
+                                    @if (Model.LockoutEnd == null)
+                                    {
+                                        <span class="badge bg-success">正常</span>
+                                    }
+                                    else
+                                    {
+                                        <span class="badge bg-warning">鎖定中</span>
+                                    }
+                                </dd>
+                            </dl>
+                        </div>
+                    </div>
+                    
+                    <div class="row mt-3">
+                        <div class="col-12">
+                            <h6>帳號狀態</h6>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>電子郵件驗證：</strong> 
+                                        @if (Model.EmailConfirmed)
+                                        {
+                                            <span class="badge bg-success">已驗證</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">未驗證</span>
+                                        }
+                                    </p>
+                                    <p><strong>電話驗證：</strong> 
+                                        @if (Model.PhoneNumberConfirmed)
+                                        {
+                                            <span class="badge bg-success">已驗證</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-warning">未驗證</span>
+                                        }
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>兩步驟驗證：</strong> 
+                                        @if (Model.TwoFactorEnabled)
+                                        {
+                                            <span class="badge bg-success">已啟用</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">未啟用</span>
+                                        }
+                                    </p>
+                                    <p><strong>帳號鎖定：</strong> 
+                                        @if (Model.LockoutEnabled)
+                                        {
+                                            <span class="badge bg-info">已啟用</span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-secondary">未啟用</span>
+                                        }
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="card-footer">
+                    <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning">編輯</a>
+                    <a asp-action="Index" class="btn btn-secondary">返回列表</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <!-- 帳號資訊 -->
+            <div class="card mb-3">
+                <div class="card-header">
+                    <h5 class="card-title">帳號資訊</h5>
+                </div>
+                <div class="card-body">
+                    <p><strong>建立時間：</strong> 無法取得</p>
+                    <p><strong>安全等級：</strong> 標準</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

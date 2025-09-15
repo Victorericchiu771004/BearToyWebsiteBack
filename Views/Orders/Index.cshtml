@@ -1,0 +1,356 @@
+@model List<BearToyWebsiteBack.Models.ViewModels.OrderViewModel>
+@using BearToyWebsiteBack.Models.ViewModels
+
+@{
+    ViewData["Title"] = "訂單管理";
+}
+
+<div class="fade-in">
+    <!-- 頁面標題和操作區 -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-1">
+                <i class="bi bi-cart-check text-primary me-2"></i>
+                訂單管理
+            </h1>
+            <p class="text-muted mb-0">管理客戶訂單和出貨狀態</p>
+        </div>
+        <div>
+            <button class="btn btn-outline-primary" onclick="loadStatistics()">
+                <i class="bi bi-arrow-clockwise me-2"></i>
+                重新整理
+            </button>
+        </div>
+    </div>
+
+    <!-- 統計卡片 -->
+    <div class="row mb-4" id="statisticsCards">
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #fff5f2; color: #ee4d2d;">
+                    <i class="bi bi-cart-check"></i>
+                </div>
+                <div class="stat-value" id="totalOrders">@Model.Count</div>
+                <div class="stat-label">總訂單數</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #fff3cd; color: #ffc107;">
+                    <i class="bi bi-clock-history"></i>
+                </div>
+                <div class="stat-value" id="pendingOrders">@Model.Count(o => o.Status == "pending")</div>
+                <div class="stat-label">待處理</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #e7f3ff; color: #0066cc;">
+                    <i class="bi bi-arrow-repeat"></i>
+                </div>
+                <div class="stat-value" id="processingOrders">@Model.Count(o => o.Status == "processing" || o.Status == "confirmed")</div>
+                <div class="stat-label">處理中</div>
+            </div>
+        </div>
+        <div class="col-lg-3 col-md-6 mb-3">
+            <div class="stat-card">
+                <div class="stat-icon" style="background-color: #f0f9f0; color: #28a745;">
+                    <i class="bi bi-check-circle"></i>
+                </div>
+                <div class="stat-value" id="completedOrders">@Model.Count(o => o.Status == "completed")</div>
+                <div class="stat-label">已完成</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 篩選和搜尋區 -->
+    <div class="card mb-4">
+        <div class="card-body">
+            <form method="get" id="filterForm">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label class="form-label">搜尋訂單</label>
+                        <div class="input-group">
+                            <span class="input-group-text">
+                                <i class="bi bi-search"></i>
+                            </span>
+                            <input type="text" class="form-control" name="search" value="@ViewBag.CurrentSearch" placeholder="訂單編號、收件人、電話">
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">訂單狀態</label>
+                        <select class="form-select" name="status">
+                            <option value="">全部狀態</option>
+                            @foreach (var status in OrderStatusHelper.OrderStatuses)
+                            {
+                                <option value="@status.Key" selected="@(ViewBag.CurrentStatus == status.Key)">@status.Value</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">付款狀態</label>
+                        <select class="form-select" name="paymentStatus">
+                            <option value="">全部付款狀態</option>
+                            @foreach (var status in OrderStatusHelper.PaymentStatuses)
+                            {
+                                <option value="@status.Key" selected="@(ViewBag.CurrentPaymentStatus == status.Key)">@status.Value</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-funnel me-1"></i>
+                                篩選
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 訂單列表 -->
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="bi bi-list-ul me-2"></i>
+                訂單列表
+            </h5>
+            <div class="d-flex align-items-center">
+                <span class="text-muted me-3">共 @ViewBag.TotalCount 筆訂單</span>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 120px;">訂單編號</th>
+                            <th style="width: 150px;">客戶資訊</th>
+                            <th style="width: 120px;">訂單日期</th>
+                            <th style="width: 100px;">商品數量</th>
+                            <th style="width: 120px;">訂單金額</th>
+                            <th style="width: 100px;">訂單狀態</th>
+                            <th style="width: 100px;">付款狀態</th>
+                            <th style="width: 100px;">出貨狀態</th>
+                            <th style="width: 200px;">操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var order in Model)
+                        {
+                            <tr data-order-id="@order.Id">
+                                <td>
+                                    <strong class="text-primary">@order.OrderNumber</strong>
+                                </td>
+                                <td>
+                                    <div>
+                                        <strong>@order.RecipientName</strong>
+                                        <small class="d-block text-muted">@order.UserEmail</small>
+                                        @if (!string.IsNullOrEmpty(order.ContactPhone))
+                                        {
+                                            <small class="d-block text-muted">@order.ContactPhone</small>
+                                        }
+                                    </div>
+                                </td>
+                                <td>
+                                    <small>@order.OrderDate.ToString("MM/dd HH:mm")</small>
+                                    <br>
+                                    <small class="text-muted">@order.OrderDate.ToString("yyyy")</small>
+                                </td>
+                                <td>
+                                    <span class="badge bg-info">@order.ItemCount 件</span>
+                                </td>
+                                <td>
+                                    <strong class="text-success">NT$ @order.TotalAmount.ToString("N0")</strong>
+                                </td>
+                                <td>
+                                    <span class="badge @OrderStatusHelper.GetStatusBadgeClass(order.Status)">
+                                        @order.StatusDisplayName
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @OrderStatusHelper.GetPaymentStatusBadgeClass(order.PaymentStatus)">
+                                        @OrderStatusHelper.GetStatusDisplayName(order.PaymentStatus, OrderStatusHelper.PaymentStatuses)
+                                    </span>
+                                </td>
+                                <td>
+                                    <span class="badge @OrderStatusHelper.GetShippingStatusBadgeClass(order.ShippingStatus)">
+                                        @OrderStatusHelper.GetStatusDisplayName(order.ShippingStatus, OrderStatusHelper.ShippingStatuses)
+                                    </span>
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm">
+                                        <a asp-action="Details" asp-route-id="@order.Id" 
+                                           class="btn btn-outline-info" 
+                                           data-bs-toggle="tooltip" 
+                                           title="查看詳細">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                        <div class="dropdown">
+                                            <button class="btn btn-outline-warning dropdown-toggle" 
+                                                    type="button" 
+                                                    data-bs-toggle="dropdown">
+                                                <i class="bi bi-arrow-repeat"></i>
+                                            </button>
+                                            <ul class="dropdown-menu">
+                                                @if (order.Status == "pending")
+                                                {
+                                                    <li><a class="dropdown-item quick-update" data-order-id="@order.Id" data-status="confirmed" href="#">確認訂單</a></li>
+                                                }
+                                                @if (order.Status == "confirmed" || order.Status == "processing")
+                                                {
+                                                    <li><a class="dropdown-item quick-update" data-order-id="@order.Id" data-status="shipped" href="#">標記為已出貨</a></li>
+                                                }
+                                                @if (order.Status == "shipped")
+                                                {
+                                                    <li><a class="dropdown-item quick-update" data-order-id="@order.Id" data-status="completed" href="#">標記為已完成</a></li>
+                                                }
+                                                <li><hr class="dropdown-divider"></li>
+                                                <li><a class="dropdown-item" asp-action="UpdateStatus" asp-route-id="@order.Id">詳細狀態管理</a></li>
+                                                @if (order.Status != "cancelled" && order.Status != "completed")
+                                                {
+                                                    <li><hr class="dropdown-divider"></li>
+                                                    <li><a class="dropdown-item text-danger quick-update" data-order-id="@order.Id" data-status="cancelled" href="#">取消訂單</a></li>
+                                                }
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            
+            @if (!Model.Any())
+            {
+                <div class="text-center py-5">
+                    <i class="bi bi-cart-x display-1 text-muted mb-3"></i>
+                    <h4 class="text-muted">目前沒有符合條件的訂單</h4>
+                    <p class="text-muted">調整篩選條件或等待新訂單</p>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- 分頁 -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="d-flex justify-content-center mt-4">
+            <nav>
+                <ul class="pagination">
+                    @if (ViewBag.CurrentPage > 1)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(ViewBag.CurrentPage - 1)&status=@ViewBag.CurrentStatus&paymentStatus=@ViewBag.CurrentPaymentStatus&search=@ViewBag.CurrentSearch">上一頁</a>
+                        </li>
+                    }
+                    
+                    @for (int i = Math.Max(1, ViewBag.CurrentPage - 2); i <= Math.Min(ViewBag.TotalPages, ViewBag.CurrentPage + 2); i++)
+                    {
+                        <li class="page-item @(i == ViewBag.CurrentPage ? "active" : "")">
+                            <a class="page-link" href="?page=@i&status=@ViewBag.CurrentStatus&paymentStatus=@ViewBag.CurrentPaymentStatus&search=@ViewBag.CurrentSearch">@i</a>
+                        </li>
+                    }
+                    
+                    @if (ViewBag.CurrentPage < ViewBag.TotalPages)
+                    {
+                        <li class="page-item">
+                            <a class="page-link" href="?page=@(ViewBag.CurrentPage + 1)&status=@ViewBag.CurrentStatus&paymentStatus=@ViewBag.CurrentPaymentStatus&search=@ViewBag.CurrentSearch">下一頁</a>
+                        </li>
+                    }
+                </ul>
+            </nav>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // 載入統計資料
+            loadStatistics();
+            
+            // 快速狀態更新
+            $('.quick-update').click(function(e) {
+                e.preventDefault();
+                var orderId = $(this).data('order-id');
+                var status = $(this).data('status');
+                var statusText = $(this).text();
+                var row = $('tr[data-order-id="' + orderId + '"]');
+                
+                if (confirm('確定要' + statusText + '嗎？')) {
+                    $.ajax({
+                        url: '@Url.Action("QuickUpdateStatus", "Orders")',
+                        type: 'POST',
+                        data: { 
+                            orderId: orderId, 
+                            status: status,
+                            __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
+                        },
+                        success: function(result) {
+                            if (result.success) {
+                                showAlert('success', result.message);
+                                
+                                // 更新狀態徽章
+                                var statusBadge = row.find('td:nth-child(6) .badge');
+                                statusBadge.removeClass().addClass('badge ' + getStatusBadgeClass(result.newStatus));
+                                statusBadge.text(result.newStatusDisplay);
+                                
+                                // 重新載入統計
+                                loadStatistics();
+                            } else {
+                                showAlert('danger', result.message);
+                            }
+                        },
+                        error: function() {
+                            showAlert('danger', '操作失敗，請稍後再試');
+                        }
+                    });
+                }
+            });
+        });
+        
+        function loadStatistics() {
+            $.get('@Url.Action("GetStatistics", "Orders")', function(data) {
+                $('#totalOrders').text(data.totalOrders);
+                $('#pendingOrders').text(data.pendingOrders);
+                $('#processingOrders').text(data.processingOrders);
+                $('#completedOrders').text(data.completedOrders);
+            });
+        }
+        
+        function getStatusBadgeClass(status) {
+            const statusClasses = {
+                'pending': 'bg-warning text-dark',
+                'confirmed': 'bg-info',
+                'processing': 'bg-primary',
+                'shipped': 'bg-success',
+                'delivered': 'bg-success',
+                'completed': 'bg-success',
+                'cancelled': 'bg-danger',
+                'returned': 'bg-secondary'
+            };
+            return statusClasses[status] || 'bg-secondary';
+        }
+        
+        function showAlert(type, message) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    <i class="bi bi-${type === 'success' ? 'check-circle' : 'exclamation-triangle'} me-2"></i>
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            
+            $('.fade-in').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+    </script>
+}

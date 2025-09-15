@@ -1,0 +1,201 @@
+@model List<BearToyWebsiteBack.Models.ViewModels.AdminManageViewModel>
+@{
+    ViewData["Title"] = "後台管理員管理";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>後台管理員管理</h2>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-1"></i>新增管理員
+    </a>
+</div>
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="card">
+    <div class="card-body">
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>管理員資訊</th>
+                        <th>聯絡資訊</th>
+                        <th>角色</th>
+                        <th>狀態</th>
+                        <th>建立時間</th>
+                        <th>最後登入</th>
+                        <th width="200">操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var admin in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div>
+                                    <strong>@admin.FullName</strong>
+                                    <br><small class="text-muted">@admin.Username</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    @if (!string.IsNullOrEmpty(admin.Email))
+                                    {
+                                        <div><i class="bi bi-envelope me-1"></i>@admin.Email</div>
+                                    }
+                                    @if (!string.IsNullOrEmpty(admin.Phone))
+                                    {
+                                        <div><i class="bi bi-telephone me-1"></i>@admin.Phone</div>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                @foreach (var role in admin.Roles)
+                                {
+                                    <span class="badge bg-info me-1">@role.RoleName</span>
+                                }
+                            </td>
+                            <td>
+                                @if (admin.IsLocked)
+                                {
+                                    <span class="badge bg-warning">鎖定</span>
+                                }
+                                else if (admin.IsActive)
+                                {
+                                    <span class="badge bg-success">啟用</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-secondary">停用</span>
+                                }
+                            </td>
+                            <td>
+                                <small>@admin.CreatedAt.ToString("yyyy/MM/dd")</small>
+                            </td>
+                            <td>
+                                @if (admin.LastLoginAt.HasValue)
+                                {
+                                    <small>@admin.LastLoginAt.Value.ToString("yyyy/MM/dd HH:mm")</small>
+                                }
+                                else
+                                {
+                                    <small class="text-muted">從未登入</small>
+                                }
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a asp-action="Details" asp-route-id="@admin.AdminId" 
+                                       class="btn btn-sm btn-outline-info">
+                                        <i class="bi bi-eye me-1"></i>檢視
+                                    </a>
+                                    <a asp-action="Edit" asp-route-id="@admin.AdminId" 
+                                       class="btn btn-sm btn-outline-primary">
+                                        <i class="bi bi-pencil me-1"></i>編輯
+                                    </a>
+                                    @if (admin.IsLocked)
+                                    {
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-warning"
+                                                onclick="unlockAdmin(@admin.AdminId, '@admin.FullName')">
+                                            <i class="bi bi-unlock me-1"></i>解鎖
+                                        </button>
+                                    }
+                                    <button type="button" 
+                                            class="btn btn-sm btn-outline-danger"
+                                            onclick="deleteAdmin(@admin.AdminId, '@admin.FullName')">
+                                        <i class="bi bi-trash me-1"></i>停用
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (!Model.Any())
+        {
+            <div class="text-center py-4">
+                <div class="text-muted">
+                    <i class="bi bi-inbox" style="font-size: 3rem;"></i>
+                    <p class="mt-2">目前沒有管理員資料</p>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- 刪除確認對話框 -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認停用管理員</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>確定要停用管理員「<span id="deleteAdminName"></span>」嗎？</p>
+                <p class="text-warning">停用後該管理員將無法登入系統！</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="deleteForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger">確認停用</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 解鎖確認對話框 -->
+<div class="modal fade" id="unlockModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">確認解除鎖定</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>確定要解除「<span id="unlockAdminName"></span>」的鎖定嗎？</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">取消</button>
+                <form id="unlockForm" method="post" class="d-inline">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-warning">確認解鎖</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function deleteAdmin(id, name) {
+            document.getElementById('deleteAdminName').textContent = name;
+            document.getElementById('deleteForm').action = '@Url.Action("Delete")/' + id;
+            new bootstrap.Modal(document.getElementById('deleteModal')).show();
+        }
+
+        function unlockAdmin(id, name) {
+            document.getElementById('unlockAdminName').textContent = name;
+            document.getElementById('unlockForm').action = '@Url.Action("Unlock")/' + id;
+            new bootstrap.Modal(document.getElementById('unlockModal')).show();
+        }
+    </script>
+}
