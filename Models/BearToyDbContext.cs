@@ -269,13 +269,19 @@ public partial class BearToyDbContext : DbContext
         modelBuilder.Entity<ProductImage>(entity =>
         {
             entity.HasIndex(e => new { e.ProductId, e.SortOrder }, "IX_ProductImages_ProductId_SortOrder");
+            entity.HasIndex(e => new { e.ProductId, e.ImageCategory }, "IX_ProductImages_ProductId_Category");
 
             entity.Property(e => e.AltText).HasMaxLength(100);
             entity.Property(e => e.CreatedAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.ImageType)
                 .HasMaxLength(20)
+                .HasDefaultValue("產品圖片");
+            entity.Property(e => e.ImageCategory)
+                .HasMaxLength(20)
                 .HasDefaultValue("gallery");
-            entity.Property(e => e.ImageUrl).HasMaxLength(200);
+            entity.Property(e => e.ImageUrl).HasMaxLength(500);
+            entity.Property(e => e.FileName).HasMaxLength(255);
+            entity.Property(e => e.ThumbnailUrl).HasMaxLength(500);
 
             entity.HasOne(d => d.Product).WithMany(p => p.ProductImages).HasForeignKey(d => d.ProductId);
         });

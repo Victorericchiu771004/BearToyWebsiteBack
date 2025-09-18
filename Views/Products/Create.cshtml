@@ -105,28 +105,52 @@
                     </div>
                 </div>
 
-                <!-- 商品圖片 -->
+                <!-- 商品主圖 -->
                 <div class="card mb-4">
                     <div class="card-header">
                         <h5 class="mb-0">
                             <i class="bi bi-image me-2"></i>
-                            商品圖片
+                            商品主圖
                         </h5>
                     </div>
                     <div class="card-body">
                         <div class="mb-3">
-                            <label class="form-label">選擇圖片</label>
-                            <input type="file" name="productImages" class="form-control" multiple accept="image/*" id="imageInput" />
+                            <label class="form-label">上傳主圖</label>
+                            <input type="file" name="mainImage" class="form-control" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/jpg,image/png,image/gif,image/webp" id="mainImageInput" />
                             <div class="form-text">
                                 <i class="bi bi-info-circle me-1"></i>
-                                可以選擇多個圖片檔案，第一張圖片將自動設為主圖。支援 JPG、PNG、GIF 格式。
+                                選擇一張圖片作為商品主圖。建議尺寸：正方形或 4:3 比例。
                             </div>
                         </div>
-                        
-                        <!-- 圖片預覽區域 -->
-                        <div id="imagePreviewContainer" class="border rounded p-3 bg-light" style="display: none;">
-                            <h6 class="mb-3">圖片預覽</h6>
-                            <div id="imagePreviewList" class="row g-3"></div>
+
+                        <div id="mainImagePreview" style="display: none;">
+                            <h6 class="mb-2">主圖預覽</h6>
+                            <div id="mainImagePreviewContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品內容圖 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-images me-2"></i>
+                            商品內容圖
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label">上傳內容圖</label>
+                            <input type="file" name="galleryImages" class="form-control" multiple accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/jpg,image/png,image/gif,image/webp" id="galleryImageInput" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                一個商品最多可以有 9 張內容圖。圖片將自動調整為 500x500px，並產生 200x200px 的縮圖。
+                            </div>
+                        </div>
+
+                        <div id="galleryImagePreview" style="display: none;">
+                            <h6 class="mb-2">內容圖預覽</h6>
+                            <div id="galleryImagePreviewContainer" class="row g-3"></div>
                         </div>
                     </div>
                 </div>
@@ -229,39 +253,85 @@
                 }
             });
             
-            // 圖片預覽功能
-            $('#imageInput').change(function() {
+            // 主圖預覽功能
+            $('#mainImageInput').change(function() {
                 var files = this.files;
-                var previewContainer = $('#imagePreviewContainer');
-                var previewList = $('#imagePreviewList');
-                
-                previewList.empty();
-                
+                var previewContainer = $('#mainImagePreview');
+                var previewContent = $('#mainImagePreviewContainer');
+
+                previewContent.empty();
+
+                if (files.length > 0 && files[0].type.match('image.*')) {
+                    previewContainer.show();
+
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var previewHtml = `
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <img src="${e.target.result}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body p-2 text-center">
+                                        <span class="badge bg-primary">主圖</span>
+                                        <small class="d-block text-muted mt-1">${files[0].name}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        previewContent.html(previewHtml);
+                    };
+                    reader.readAsDataURL(files[0]);
+                } else {
+                    previewContainer.hide();
+                }
+            });
+
+            // 內容圖預覽功能
+            $('#galleryImageInput').change(function() {
+                var files = this.files;
+                var previewContainer = $('#galleryImagePreview');
+                var previewContent = $('#galleryImagePreviewContainer');
+
+                previewContent.empty();
+
                 if (files.length > 0) {
                     previewContainer.show();
-                    
-                    for (var i = 0; i < files.length; i++) {
+
+                    var maxFiles = Math.min(files.length, 9);
+                    for (var i = 0; i < maxFiles; i++) {
                         if (files[i].type.match('image.*')) {
                             var reader = new FileReader();
                             reader.onload = (function(file, index) {
                                 return function(e) {
-                                    var isMainImage = index === 0;
+                                    var fileSizeKB = Math.round(file.size / 1024);
                                     var previewHtml = `
-                                        <div class="col-6 col-md-4">
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
                                             <div class="card">
-                                                <img src="${e.target.result}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
                                                 <div class="card-body p-2">
+                                                    <span class="badge bg-success">內容圖</span>
                                                     <small class="text-muted d-block">${file.name}</small>
-                                                    ${isMainImage ? '<span class="badge bg-primary mt-1">主圖</span>' : ''}
+                                                    <small class="text-info">${fileSizeKB}KB</small>
                                                 </div>
                                             </div>
                                         </div>
                                     `;
-                                    previewList.append(previewHtml);
+                                    previewContent.append(previewHtml);
                                 };
                             })(files[i], i);
                             reader.readAsDataURL(files[i]);
                         }
+                    }
+
+                    if (files.length > 9) {
+                        // 顯示警告訊息
+                        var alertHtml = `
+                            <div class="alert alert-warning alert-dismissible fade show mt-3" role="alert">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                只能上傳最多9張內容圖，已自動選取前9張圖片。
+                                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                            </div>
+                        `;
+                        previewContainer.append(alertHtml);
                     }
                 } else {
                     previewContainer.hide();

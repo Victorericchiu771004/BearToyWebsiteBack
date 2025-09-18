@@ -111,71 +111,130 @@
                     </div>
                 </div>
 
-                <!-- 現有圖片管理 -->
-                @if (Model.ProductImages.Any())
-                {
-                    <div class="card mb-4">
-                        <div class="card-header d-flex justify-content-between align-items-center">
-                            <h5 class="mb-0">
-                                <i class="bi bi-images me-2"></i>
-                                現有圖片
-                            </h5>
-                            <span class="badge bg-secondary">@Model.ProductImages.Count 張圖片</span>
+                <!-- 主圖管理 -->
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="bi bi-image me-2"></i>
+                            商品主圖
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @{
+                            var mainImage = Model.ProductImages.FirstOrDefault(pi => pi.ImageCategory == "main");
+                        }
+
+
+                        @if (mainImage != null)
+                        {
+                            <div class="row mb-3">
+                                <div class="col-md-4">
+                                    <div class="card">
+                                        <img src="@mainImage.ImageUrl" class="card-img-top" alt="@mainImage.AltText" style="height: 200px; object-fit: cover;">
+                                        <div class="card-body p-2 text-center">
+                                            <span class="badge bg-primary">目前主圖</span>
+                                            <button type="button" class="btn btn-sm btn-outline-danger delete-image mt-1" data-image-id="@mainImage.Id">
+                                                <i class="bi bi-trash me-1"></i>刪除
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="alert alert-info">
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        目前已有主圖。上傳新的主圖將會替換現有的主圖。
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label">@(mainImage != null ? "更換主圖" : "上傳主圖")</label>
+                            <input type="file" name="mainImage" class="form-control" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/jpg,image/png,image/gif,image/webp" id="mainImageInput" />
+                            <div class="form-text">
+                                <i class="bi bi-info-circle me-1"></i>
+                                只能選擇一張圖片作為商品主圖。建議尺寸：正方形或 4:3 比例。
+                            </div>
                         </div>
-                        <div class="card-body">
-                            <div class="row g-3" id="existingImages">
-                                @foreach (var image in Model.ProductImages.OrderBy(pi => pi.SortOrder))
+
+                        <div id="mainImagePreview" style="display: none;">
+                            <h6 class="mb-2">新主圖預覽</h6>
+                            <div id="mainImagePreviewContainer"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 商品內容圖管理 -->
+                <div class="card mb-4">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="bi bi-images me-2"></i>
+                            商品內容圖
+                        </h5>
+                        @{
+                            var galleryImages = Model.ProductImages.Where(pi => pi.ImageCategory == "gallery").OrderBy(pi => pi.SortOrder).ToList();
+                        }
+                        <span class="badge bg-secondary">@galleryImages.Count / 9 張圖片</span>
+                    </div>
+                    <div class="card-body">
+
+                        @if (galleryImages.Any())
+                        {
+                            <div class="mb-3">
+                                <div class="alert alert-info">
+                                    <i class="bi bi-arrows-move me-2"></i>
+                                    拖曳圖片可重新排序
+                                </div>
+                            </div>
+                            <div class="row g-3 mb-4" id="existingGalleryImages">
+                                @foreach (var image in galleryImages)
                                 {
-                                    <div class="col-lg-3 col-md-4 col-sm-6" data-image-id="@image.Id">
-                                        <div class="card">
-                                            <img src="@image.ImageUrl" class="card-img-top" alt="@image.AltText" style="height: 150px; object-fit: cover;">
-                                            <div class="card-body p-3">
-                                                <div class="d-flex justify-content-between align-items-start mb-2">
-                                                    @if (image.IsMainImage)
-                                                    {
-                                                        <span class="badge bg-primary">主圖</span>
-                                                    }
-                                                    else
-                                                    {
-                                                        <span class="badge bg-light text-dark">圖片 @image.SortOrder</span>
-                                                    }
+                                    <div class="col-lg-3 col-md-4 col-sm-6 gallery-item" data-image-id="@image.Id" style="cursor: move;">
+                                        <div class="card position-relative">
+                                            <div class="drag-handle position-absolute top-0 start-0 p-2" style="z-index: 10;">
+                                                <i class="bi bi-arrows-move text-primary bg-white rounded px-1"></i>
+                                            </div>
+                                            <img src="@(image.ThumbnailUrl ?? image.ImageUrl)" class="card-img-top" alt="@image.AltText" style="height: 150px; object-fit: cover;">
+                                            <div class="card-body p-2">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <small class="text-muted sort-order-display">@image.SortOrder</small>
                                                     <button type="button" class="btn btn-sm btn-outline-danger delete-image" data-image-id="@image.Id">
                                                         <i class="bi bi-trash"></i>
                                                     </button>
                                                 </div>
-                                                <small class="text-muted">@image.AltText</small>
+                                                <small class="text-muted d-block">@image.AltText</small>
+                                                <small class="text-info">@(image.FileSize / 1024)KB</small>
                                             </div>
                                         </div>
                                     </div>
                                 }
                             </div>
-                        </div>
-                    </div>
-                }
+                        }
 
-                <!-- 新增圖片 -->
-                <div class="card mb-4">
-                    <div class="card-header">
-                        <h5 class="mb-0">
-                            <i class="bi bi-plus-circle me-2"></i>
-                            新增圖片
-                        </h5>
-                    </div>
-                    <div class="card-body">
-                        <div class="mb-3">
-                            <label class="form-label">選擇圖片</label>
-                            <input type="file" name="productImages" class="form-control" multiple accept="image/*" id="imageInput" />
-                            <div class="form-text">
-                                <i class="bi bi-info-circle me-1"></i>
-                                可以選擇多個圖片檔案。支援 JPG、PNG、GIF 格式。
+                        @if (galleryImages.Count < 9)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label">新增商品內容圖</label>
+                                <input type="file" name="galleryImages" class="form-control" multiple="multiple" accept=".jpg,.jpeg,.png,.gif,.webp,image/jpeg,image/jpg,image/png,image/gif,image/webp" id="galleryImageInput" />
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    一個商品最多可以有 9 張內容圖。目前還可以新增 @(9 - galleryImages.Count) 張圖片。
+                                    <br>圖片將自動調整為 500x500px，並產生 200x200px 的縮圖。
+                                </div>
                             </div>
-                        </div>
-                        
-                        <!-- 圖片預覽區域 -->
-                        <div id="imagePreviewContainer" class="border rounded p-3 bg-light" style="display: none;">
-                            <h6 class="mb-3">新圖片預覽</h6>
-                            <div id="imagePreviewList" class="row g-3"></div>
-                        </div>
+
+                            <div id="galleryImagePreview" style="display: none;">
+                                <h6 class="mb-2">新內容圖預覽</h6>
+                                <div id="galleryImagePreviewContainer" class="row g-3"></div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle me-2"></i>
+                                已達到內容圖數量上限（9張）。如需新增圖片，請先刪除部分現有圖片。
+                            </div>
+                        }
                     </div>
                 </div>
             </div>
@@ -278,7 +337,33 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+
+    <!-- SortableJS for drag and drop -->
+    <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
+
+    <style>
+        .sortable-ghost {
+            opacity: 0.4;
+        }
+
+        .sortable-chosen {
+            transform: scale(1.05);
+        }
+
+        .sortable-drag {
+            transform: rotate(5deg);
+        }
+
+        .gallery-item:hover .drag-handle {
+            opacity: 1;
+        }
+
+        .drag-handle {
+            opacity: 0.7;
+            transition: opacity 0.2s;
+        }
+    </style>
+
     <script>
         $(document).ready(function() {
             // 載入子分類
@@ -324,15 +409,14 @@
                 var button = $(this);
                 var imageId = button.data('image-id');
                 var imageDiv = button.closest('[data-image-id]');
-                
-                // 使用 SweetAlert 或 Bootstrap Modal 可以提供更好的用戶體驗
+
                 if (confirm('確定要刪除這張圖片嗎？此操作無法復原。')) {
                     button.prop('disabled', true).html('<i class="bi bi-hourglass-split"></i>');
-                    
+
                     $.ajax({
                         url: '@Url.Action("DeleteImage", "Products")',
                         type: 'POST',
-                        data: { 
+                        data: {
                             imageId: imageId,
                             __RequestVerificationToken: $('input[name="__RequestVerificationToken"]').val()
                         },
@@ -340,12 +424,19 @@
                             if (result.success) {
                                 imageDiv.fadeOut(300, function() {
                                     $(this).remove();
-                                    
-                                    // 更新圖片數量
-                                    var remainingImages = $('#existingImages [data-image-id]').length;
-                                    $('.badge:contains("張圖片")').text(remainingImages + ' 張圖片');
-                                    
-                                    // 顯示成功訊息
+
+                                    // 更新內容圖數量
+                                    var remainingGalleryImages = $('#existingGalleryImages [data-image-id]').length;
+                                    if (remainingGalleryImages >= 0) {
+                                        $('.badge:contains("/ 9 張圖片")').text(remainingGalleryImages + ' / 9 張圖片');
+
+                                        // 如果內容圖少於9張，顯示上傳區域
+                                        if (remainingGalleryImages < 9) {
+                                            $('.alert-warning:contains("已達到內容圖數量上限")').closest('.alert').hide();
+                                            $('[name="galleryImages"]').closest('.mb-3').show();
+                                        }
+                                    }
+
                                     showAlert('success', '圖片已成功刪除');
                                 });
                             } else {
@@ -360,45 +451,138 @@
                     });
                 }
             });
-            
-            // 圖片預覽功能
-            $('#imageInput').change(function() {
+
+            // 主圖預覽功能
+            $('#mainImageInput').change(function() {
                 var files = this.files;
-                var previewContainer = $('#imagePreviewContainer');
-                var previewList = $('#imagePreviewList');
-                
-                previewList.empty();
-                
+                var previewContainer = $('#mainImagePreview');
+                var previewContent = $('#mainImagePreviewContainer');
+
+                previewContent.empty();
+
+                if (files.length > 0 && files[0].type.match('image.*')) {
+                    previewContainer.show();
+
+                    var reader = new FileReader();
+                    reader.onload = function(e) {
+                        var previewHtml = `
+                            <div class="col-md-4">
+                                <div class="card">
+                                    <img src="${e.target.result}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                                    <div class="card-body p-2 text-center">
+                                        <span class="badge bg-success">新主圖</span>
+                                        <small class="d-block text-muted mt-1">${files[0].name}</small>
+                                    </div>
+                                </div>
+                            </div>
+                        `;
+                        previewContent.html(previewHtml);
+                    };
+                    reader.readAsDataURL(files[0]);
+                } else {
+                    previewContainer.hide();
+                }
+            });
+
+            // 內容圖預覽功能
+            $('#galleryImageInput').change(function() {
+                var files = this.files;
+                var previewContainer = $('#galleryImagePreview');
+                var previewContent = $('#galleryImagePreviewContainer');
+
+                previewContent.empty();
+
                 if (files.length > 0) {
                     previewContainer.show();
-                    
-                    for (var i = 0; i < files.length; i++) {
+
+                    for (var i = 0; i < Math.min(files.length, 9); i++) {
                         if (files[i].type.match('image.*')) {
                             var reader = new FileReader();
                             reader.onload = (function(file, index) {
                                 return function(e) {
+                                    var fileSizeKB = Math.round(file.size / 1024);
                                     var previewHtml = `
-                                        <div class="col-6 col-md-4">
+                                        <div class="col-lg-3 col-md-4 col-sm-6">
                                             <div class="card">
-                                                <img src="${e.target.result}" class="card-img-top" style="height: 120px; object-fit: cover;">
+                                                <img src="${e.target.result}" class="card-img-top" style="height: 150px; object-fit: cover;">
                                                 <div class="card-body p-2">
+                                                    <span class="badge bg-success">新增</span>
                                                     <small class="text-muted d-block">${file.name}</small>
-                                                    <span class="badge bg-success mt-1">新圖片</span>
+                                                    <small class="text-info">${fileSizeKB}KB</small>
                                                 </div>
                                             </div>
                                         </div>
                                     `;
-                                    previewList.append(previewHtml);
+                                    previewContent.append(previewHtml);
                                 };
                             })(files[i], i);
                             reader.readAsDataURL(files[i]);
                         }
+                    }
+
+                    if (files.length > 9) {
+                        showAlert('warning', `只能上傳前9張圖片，已忽略其餘 ${files.length - 9} 張圖片。`);
                     }
                 } else {
                     previewContainer.hide();
                 }
             });
             
+            // 初始化拖拉排序功能
+            initGallerySort();
+
+            function initGallerySort() {
+                var galleryContainer = document.getElementById('existingGalleryImages');
+                if (!galleryContainer) return;
+
+                new Sortable(galleryContainer, {
+                    animation: 200,
+                    ghostClass: 'sortable-ghost',
+                    chosenClass: 'sortable-chosen',
+                    dragClass: 'sortable-drag',
+                    handle: '.gallery-item',
+                    onEnd: function(evt) {
+                        updateImageOrder();
+                        updateSortOrderDisplay();
+                    }
+                });
+            }
+
+            function updateImageOrder() {
+                var imageIds = [];
+                $('#existingGalleryImages .gallery-item').each(function() {
+                    imageIds.push(parseInt($(this).data('image-id')));
+                });
+
+                if (imageIds.length === 0) return;
+
+                $.ajax({
+                    url: '@Url.Action("UpdateImageOrder", "Products")',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(imageIds),
+                    headers: {
+                        'RequestVerificationToken': $('input[name="__RequestVerificationToken"]').val()
+                    },
+                    success: function(result) {
+                        if (result.success) {
+                            showAlert('success', '圖片排序已更新');
+                        } else {
+                            showAlert('danger', '排序更新失敗：' + (result.message || '未知錯誤'));
+                        }
+                    },
+                    error: function() {
+                        showAlert('danger', '排序更新時發生錯誤');
+                    }
+                });
+            }
+
+            function updateSortOrderDisplay() {
+                $('#existingGalleryImages .gallery-item').each(function(index) {
+                    $(this).find('.sort-order-display').text(index + 1);
+                });
+            }
+
             // 顯示警告訊息函數
             function showAlert(type, message) {
                 var alertHtml = `
@@ -408,9 +592,9 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     </div>
                 `;
-                
+
                 $('.fade-in').prepend(alertHtml);
-                
+
                 // 自動關閉
                 setTimeout(function() {
                     $('.alert').alert('close');
