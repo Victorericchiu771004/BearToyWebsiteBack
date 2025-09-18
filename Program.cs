@@ -47,6 +47,9 @@ namespace BearToyWebsiteBack
             builder.Services.AddScoped<IAdminAuthService, AdminAuthService>();
             builder.Services.AddScoped<IAdminInitializeService, AdminInitializeService>();
 
+            // 註冊圖片處理服務
+            builder.Services.AddScoped<IImageProcessingService, ImageProcessingService>();
+
             // 設定管理員Cookie認證
             builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
                 .AddCookie(options =>
@@ -77,6 +80,17 @@ namespace BearToyWebsiteBack
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
+
+            // 設定圖片靜態檔案路由
+            var imageFolder = app.Configuration["ImageFolder"];
+            if (!string.IsNullOrEmpty(imageFolder))
+            {
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    FileProvider = new Microsoft.Extensions.FileProviders.PhysicalFileProvider(imageFolder),
+                    RequestPath = "/images"
+                });
+            }
             
             app.UseRequestLocalization();
 

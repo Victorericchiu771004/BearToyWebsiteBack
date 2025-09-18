@@ -19,6 +19,18 @@ public partial class ProductImage
 
     public string ImageType { get; set; } = null!;
 
+    public string ImageCategory { get; set; } = null!; // main, gallery, thumbnails
+
+    public string FileName { get; set; } = null!;
+
+    public long FileSize { get; set; }
+
+    public int? Width { get; set; }
+
+    public int? Height { get; set; }
+
+    public string? ThumbnailUrl { get; set; }
+
     public DateTime CreatedAt { get; set; }
 
     public virtual Product Product { get; set; } = null!;
